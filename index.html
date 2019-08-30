@@ -26,16 +26,43 @@
       let canvas = document.getElementById("canvas");
       let context = canvas.getContext("2d");
 
-      function drawBall(x, y) {
+      let x = 0;
+      let y = 0;
+      let vi = 90;
+      let angulo = 45;
+      let g = 9.8;
+      let rad = (Math.PI / 180) * angulo;
+      let sen = Math.sin(rad);
+      let cos = Math.cos(rad);
+
+      function tempoTotal() {
+        return 2 * ((vi * sen) / g);
+      }
+
+      function cordenadaX(i) {
+        return vi * cos * i;
+      }
+
+      function cordenadaY(i) {
+        return vi * sen * i - (g / 2) * (i * i);
+      }
+
+      function drawBall() {
         context.beginPath();
         context.arc(x, y, 10, 0, Math.PI * 2);
         context.fillStyle = "#f3f3f3";
         context.fill();
       }
+      let tempo = tempoTotal();
+      console.log(tempo);
       function onDraw() {
         requestAnimationFrame(onDraw);
         context.clearRect(0, 0, canvas.width, canvas.height);
-        drawBall(100, 400);
+        for (let i = 0.0; i < tempo; i += 0.05) {
+          x = cordenadaX(i);
+          y = canvas.height - cordenadaY(i);
+          drawBall();
+        }
       }
       requestAnimationFrame(onDraw);
     </script>
