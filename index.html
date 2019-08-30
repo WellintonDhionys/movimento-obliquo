@@ -28,6 +28,7 @@
 
       let x = 0;
       let y = 0;
+      let position = [];
       let vi = 90;
       let angulo = 45;
       let g = 9.8;
@@ -53,17 +54,28 @@
         context.fillStyle = "#f3f3f3";
         context.fill();
       }
-      let tempo = tempoTotal();
-      console.log(tempo);
+
+      function percurso() {
+        let tempo = tempoTotal();
+        for (let i = 0.0; i < tempo; i += 0.05) {
+          position.push({
+            x: cordenadaX(i),
+            y: canvas.height - cordenadaY(i)
+          });
+        }
+      }
+
       function onDraw() {
         requestAnimationFrame(onDraw);
         context.clearRect(0, 0, canvas.width, canvas.height);
-        for (let i = 0.0; i < tempo; i += 0.05) {
-          x = cordenadaX(i);
-          y = canvas.height - cordenadaY(i);
-          drawBall();
+        if (position.length > 0) {
+          let p = position.shift();
+          x = p.x;
+          y = p.y;
         }
+        drawBall();
       }
+      percurso();
       requestAnimationFrame(onDraw);
     </script>
   </body>
