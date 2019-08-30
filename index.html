@@ -21,6 +21,11 @@
   </head>
   <body>
     <canvas id="canvas" width="950" height="500"></canvas>
+    <label>Velocidade Inicial</label>
+    <input id="velocidade" type="number" /><br />
+    <label>Angulo</label>
+    <input id="angulo" type="number" /><br />
+    <button onclick="percurso()">Play</button>
 
     <script>
       let canvas = document.getElementById("canvas");
@@ -29,22 +34,17 @@
       let x = 0;
       let y = 0;
       let position = [];
-      let vi = 90;
-      let angulo = 45;
       let g = 9.8;
-      let rad = (Math.PI / 180) * angulo;
-      let sen = Math.sin(rad);
-      let cos = Math.cos(rad);
 
-      function tempoTotal() {
+      function tempoTotal(vi, sen) {
         return 2 * ((vi * sen) / g);
       }
 
-      function cordenadaX(i) {
+      function cordenadaX(vi, cos, i) {
         return vi * cos * i;
       }
 
-      function cordenadaY(i) {
+      function cordenadaY(vi, sen, i) {
         return vi * sen * i - (g / 2) * (i * i);
       }
 
@@ -56,11 +56,19 @@
       }
 
       function percurso() {
-        let tempo = tempoTotal();
+        let vi = document.getElementById("velocidade").value;
+        let angulo = document.getElementById("angulo").value;
+
+        let rad = (Math.PI / 180) * angulo;
+        let sen = Math.sin(rad);
+        let cos = Math.cos(rad);
+
+        let tempo = tempoTotal(vi, sen);
+
         for (let i = 0.0; i < tempo; i += 0.05) {
           position.push({
-            x: cordenadaX(i),
-            y: canvas.height - cordenadaY(i)
+            x: cordenadaX(vi, cos, i),
+            y: canvas.height - cordenadaY(vi, sen, i)
           });
         }
       }
