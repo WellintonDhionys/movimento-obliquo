@@ -31,21 +31,42 @@
       let canvas = document.getElementById("canvas");
       let context = canvas.getContext("2d");
 
-      let x = 0;
-      let y = 0;
+      let x = 10;
+      let y = canvas.height - 10;
+      let escalaX = 1;
+      let escalaY = 1;
+      let altura = 0;
       let position = [];
       let g = 9.8;
 
-      function tempoTotal(vi, sen) {
-        return 2 * ((vi * sen) / g);
-      }
+      function calcula() {
+        let vi = document.getElementById("velocidade").value;
+        let angulo = document.getElementById("angulo").value;
 
-      function cordenadaX(vi, cos, i) {
-        return vi * cos * i;
-      }
+        let rad = (Math.PI / 180) * angulo;
+        let sen = Math.sin(rad);
+        let cos = Math.cos(rad);
 
-      function cordenadaY(vi, sen, i) {
-        return vi * sen * i - (g / 2) * (i * i);
+        this.tempoTotal = function() {
+          return 2 * ((vi * sen) / g);
+        };
+
+        this.alturaMax = function() {
+          return (vi * vi * (sen * sen)) / (2 * g);
+        };
+
+        this.cordenadaX = function(i) {
+          return vi * cos * i;
+        };
+
+        this.cordenadaY = function(i) {
+          return vi * sen * i - (g / 2) * (i * i);
+        };
+
+        this.escala = function() {
+          escalaX = Math.ceil(position[position.length - 1].x / canvas.width);
+          escalaY = Math.ceil(altura / canvas.height);
+        };
       }
 
       function drawBall() {
@@ -56,20 +77,19 @@
       }
 
       function percurso() {
-        let vi = document.getElementById("velocidade").value;
-        let angulo = document.getElementById("angulo").value;
+        let calc = new calcula();
 
-        let rad = (Math.PI / 180) * angulo;
-        let sen = Math.sin(rad);
-        let cos = Math.cos(rad);
-
-        let tempo = tempoTotal(vi, sen);
+        let tempo = calc.tempoTotal().toFixed(2);
+        altura = calc.alturaMax().toFixed(2);
 
         for (let i = 0.0; i < tempo; i += 0.05) {
           position.push({
-            x: cordenadaX(vi, cos, i),
-            y: canvas.height - cordenadaY(vi, sen, i)
+            x: calc.cordenadaX(i),
+            y: calc.cordenadaY(i)
           });
+        }
+        if (position.length > 0) {
+          calc.escala(altura);
         }
       }
 
@@ -78,8 +98,12 @@
         context.clearRect(0, 0, canvas.width, canvas.height);
         if (position.length > 0) {
           let p = position.shift();
-          x = p.x;
-          y = p.y;
+          x = p.x.toFixed(2) / escalaX;
+          y =
+            altura >= canvas.height
+              ? canvas.height - p.y.toFixed(2) / escalaY - 10
+              : canvas.height - p.y.toFixed(2) / escalaX - 10;
+          //y = canvas.height.toFixed(2) - p.y.toFixed(2) / escalaY - 10;
         }
         drawBall();
       }
