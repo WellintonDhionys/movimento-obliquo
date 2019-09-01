@@ -37,7 +37,9 @@
       let escalaY = 1;
       let altura = 0;
       let position = [];
+      let aux = [];
       let g = 9.8;
+      let draw = new objeto();
 
       function calcula() {
         let vi = document.getElementById("velocidade").value;
@@ -69,20 +71,17 @@
         };
       }
 
-      function drawBall() {
-        context.beginPath();
-        context.arc(x, y, 10, 0, Math.PI * 2);
-        context.fillStyle = "#f3f3f3";
-        context.fill();
-      }
-
       function percurso() {
         let calc = new calcula();
+
+        aux = [];
 
         let tempo = calc.tempoTotal().toFixed(2);
         altura = calc.alturaMax().toFixed(2);
 
-        for (let i = 0.0; i < tempo; i += 0.05) {
+        let tmp = tempo > 10 ? Math.sqrt(tempo) / 100 : 0.02;
+
+        for (let i = 0.0; i < tempo; i += tmp) {
           position.push({
             x: calc.cordenadaX(i),
             y: calc.cordenadaY(i)
@@ -93,21 +92,43 @@
         }
       }
 
+      function objeto() {
+        this.ball = function() {
+          context.beginPath();
+          context.arc(x, y, 10, 0, Math.PI * 2);
+          context.fillStyle = "#f3f3f3";
+          context.fill();
+        };
+
+        this.percurso = function() {
+          for (let i = 1; i < aux.length; i++) {
+            context.beginPath();
+            context.arc(aux[i].x, aux[i].y, 1, 0, Math.PI * 2, true);
+            context.fillStyle = "#f3f3f3";
+            context.fill();
+          }
+        };
+      }
+
       function onDraw() {
-        requestAnimationFrame(onDraw);
         context.clearRect(0, 0, canvas.width, canvas.height);
         if (position.length > 0) {
           let p = position.shift();
-          x = p.x.toFixed(2) / escalaX;
+          x = p.x.toFixed(2) / escalaX + 10;
           y =
             altura >= canvas.height
               ? canvas.height - p.y.toFixed(2) / escalaY - 10
               : canvas.height - p.y.toFixed(2) / escalaX - 10;
           //y = canvas.height.toFixed(2) - p.y.toFixed(2) / escalaY - 10;
+          aux.push({
+            x: x,
+            y: y
+          });
         }
-        drawBall();
+        draw.ball();
+        draw.percurso();
+        requestAnimationFrame(onDraw);
       }
-      percurso();
       requestAnimationFrame(onDraw);
     </script>
   </body>
