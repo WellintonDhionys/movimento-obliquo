@@ -21,112 +21,156 @@
   </head>
   <body>
     <canvas id="canvas" width="950" height="500"></canvas>
+    <canvas id="canvas_scale" width="950" height="37"></canvas>
     <label>Velocidade Inicial</label>
     <input id="velocidade" type="number" /><br />
     <label>Angulo</label>
     <input id="angulo" type="number" /><br />
-    <button onclick="percurso()">Play</button>
+    <button onclick="play()">Play</button>
 
     <script>
       let canvas = document.getElementById("canvas");
+      let canvas_scale = document.getElementById("canvas_scale");
       let context = canvas.getContext("2d");
+      let ctx = canvas_scale.getContext("2d");
 
-      let x = 10;
-      let y = canvas.height - 10;
-      let escalaX = 1;
-      let escalaY = 1;
-      let altura = 0;
+      let values = {
+        x: 5,
+        y: canvas.height - 5,
+        width: canvas.width,
+        height: canvas.height,
+        g: 9.8,
+        raio: Math.PI * 2,
+        maxHeight: 0
+      };
+      let scale = {
+        x: 1,
+        y: 1
+      };
       let position = [];
       let aux = [];
-      let g = 9.8;
-      let draw = new objeto();
+      let draw = new object();
 
-      function calcula() {
+      function calculate() {
         let vi = document.getElementById("velocidade").value;
-        let angulo = document.getElementById("angulo").value;
+        let angle = document.getElementById("angulo").value;
 
-        let rad = (Math.PI / 180) * angulo;
+        let rad = (Math.PI / 180) * angle;
         let sen = Math.sin(rad);
         let cos = Math.cos(rad);
 
-        this.tempoTotal = function() {
-          return 2 * ((vi * sen) / g);
+        this.time = function() {
+          return 2 * ((vi * sen) / values.g);
         };
 
-        this.alturaMax = function() {
-          return (vi * vi * (sen * sen)) / (2 * g);
+        this.maxHeight = function() {
+          return (vi * vi * (sen * sen)) / (2 * values.g);
         };
 
-        this.cordenadaX = function(i) {
+        this.coordinateX = function(i) {
           return vi * cos * i;
         };
 
-        this.cordenadaY = function(i) {
-          return vi * sen * i - (g / 2) * (i * i);
+        this.coordinateY = function(i) {
+          return vi * sen * i - (values.g / 2) * (i * i);
         };
 
-        this.escala = function() {
-          escalaX = Math.ceil(position[position.length - 1].x / canvas.width);
-          escalaY = Math.ceil(altura / canvas.height);
+        this.scale = function() {
+          scale.x = Math.ceil(position[position.length - 1].x / values.width);
+          scale.y = Math.ceil(values.maxHeight / values.height);
         };
       }
 
-      function percurso() {
-        let calc = new calcula();
+      function play() {
+        let calc = new calculate();
 
         aux = [];
 
-        let tempo = calc.tempoTotal().toFixed(2);
-        altura = calc.alturaMax().toFixed(2);
+        let time = calc.time().toFixed(2);
+        values.maxHeight = calc.maxHeight().toFixed(2);
 
-        let tmp = tempo > 10 ? Math.sqrt(tempo) / 100 : 0.02;
+        let tmp = time > 10 ? Math.sqrt(time) / 100 : 0.02;
 
-        for (let i = 0.0; i < tempo; i += tmp) {
+        for (let i = 0.0; i < time; i += tmp) {
           position.push({
-            x: calc.cordenadaX(i),
-            y: calc.cordenadaY(i)
+            x: calc.coordinateX(i),
+            y: calc.coordinateY(i)
           });
         }
         if (position.length > 0) {
-          calc.escala(altura);
+          calc.scale(values.maxHeight);
         }
       }
 
-      function objeto() {
+      function object() {
+        context.fillStyle = "#f3f3f3";
+        ctx.strokeStyle = "#d1d1d1";
+        ctx.fillStyle = "#d1d1d1";
+        ctx.font = "12px Arial";
+
         this.ball = function() {
           context.beginPath();
-          context.arc(x, y, 10, 0, Math.PI * 2);
-          context.fillStyle = "#f3f3f3";
+          context.arc(values.x, values.y, 5, 0, values.raio);
           context.fill();
         };
 
-        this.percurso = function() {
-          for (let i = 1; i < aux.length; i++) {
+        this.drawRoute = function() {
+          let tmp = aux.length;
+
+          for (let i = 1; i < tmp; i++) {
             context.beginPath();
-            context.arc(aux[i].x, aux[i].y, 1, 0, Math.PI * 2, true);
-            context.fillStyle = "#f3f3f3";
+            context.arc(aux[i].x, aux[i].y, 1, 0, values.raio);
             context.fill();
           }
+        };
+
+        this.ruler = function() {
+          ctx.beginPath();
+          ctx.moveTo(0, 0);
+          ctx.lineTo(950, 0);
+          ctx.stroke();
+          ctx.fill();
+        };
+
+        this.measure = function() {
+          r = (scale.x * 1000) / 10;
+
+          ctx.beginPath();
+          ctx.fillText(0, 5, 30);
+
+          ctx.moveTo(10, 0);
+          ctx.lineTo(10, 14);
+
+          for (let i = 1; i <= 10; i++) {
+            ctx.moveTo((r * i) / scale.x + 5, 0);
+            ctx.lineTo((r * i) / scale.x + 5, 14);
+
+            ctx.fillText(r * i, (r * i) / scale.x - 5, 30);
+          }
+          ctx.stroke();
         };
       }
 
       function onDraw() {
-        context.clearRect(0, 0, canvas.width, canvas.height);
+        context.clearRect(0, 0, values.width, values.height);
+        ctx.clearRect(0, 0, canvas_scale.width, canvas_scale.height);
+
         if (position.length > 0) {
           let p = position.shift();
-          x = p.x.toFixed(2) / escalaX + 10;
-          y =
-            altura >= canvas.height
-              ? canvas.height - p.y.toFixed(2) / escalaY - 10
-              : canvas.height - p.y.toFixed(2) / escalaX - 10;
-          //y = canvas.height.toFixed(2) - p.y.toFixed(2) / escalaY - 10;
+          values.x = p.x.toFixed(2) / scale.x + 5;
+          values.y =
+            values.maxHeight >= values.height
+              ? values.height - p.y.toFixed(2) / scale.y - 5
+              : values.height - p.y.toFixed(2) / scale.x - 5;
           aux.push({
-            x: x,
-            y: y
+            x: values.x,
+            y: values.y
           });
         }
+        draw.ruler();
+        draw.measure();
         draw.ball();
-        draw.percurso();
+        draw.drawRoute();
         requestAnimationFrame(onDraw);
       }
       requestAnimationFrame(onDraw);
